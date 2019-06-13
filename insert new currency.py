@@ -24,6 +24,23 @@ def currency1 (cursor,a):
             if type(a[i]) is dict:
                 currency1 (cursor,a[i])
 
+    
+def f3(cursor,m):
+    postgres_select_query = """Select id,name from "Public".currency"""
+    cursor.execute(postgres_select_query)
+    a = cursor.fetchall()
+    d = {}
+    for i in a:
+        d[i[1]]=i[0]
+    for i in m:
+        a= i.split('/')
+        b=d[a[0]]
+        q=d[a[1]]
+        postgres_insert_query1 = """ INSERT INTO  "Public".symbols ("base_id","quote_id") VALUES (%s,%s)"""# insert
+        record_to_insert = (b,q)
+        cursor.execute(postgres_insert_query1, record_to_insert)
+
+
 try:
     conn = psycopg2.connect(dbname='daria', user='daria', password='dasha50', host='192.168.4.12', port='5432', )
     cursor = conn.cursor()
@@ -35,11 +52,17 @@ try:
     #print("deleted")
 
     g = ccxt.poloniex().load_markets()
-    pp = pprint.PrettyPrinter(indent=4)
-    pp.pprint(g)
+    #pp = pprint.PrettyPrinter(indent=4)
+    #pp.pprint(g)
     #print("ccxt got")
     currency1(cursor,g)
+    f3(cursor,g)
+
+
     conn.commit()
+
+
+    
     
 except (Exception, psycopg2.Error) as error :
     if(conn):
