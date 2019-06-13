@@ -17,12 +17,12 @@ try:
 
     for i in g:
         a= i.split('/')
-        print (a)
-        print ("a ",a[0],a[1])
-        print ("d ",d[a[0]],d[a[1]])
+        # print (a)
+        #print ("a ",a[0],a[1])
+        #print ("d ",d[a[0]],d[a[1]])
         b=d[a[0]]
         q=d[a[1]]
-
+        print(b,q)
     
 except (Exception, psycopg2.Error) as error :
     if(conn):

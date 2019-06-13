@@ -11,6 +11,7 @@ try:
     for i in a:
         d[i[1]]=i[0]
     print(d)
+    print(d['BTC'])
     conn.commit()
     
 except (Exception, psycopg2.Error) as error :
