@@ -2,76 +2,65 @@ import ccxt
 import pprint
 import psycopg2
 
-def f1(cursor,curr) :
-    postgres_select_query1 = """ SELECT count(*) cnt FROM "Public".currency WHERE "name"= %s """# check record
+# The function for checking the presence of currency's name into table and insert new one.
+def insert_into_currency(cursor,curr) :
+    postgres_select_query = """ SELECT count(*) cnt FROM "Public".currency WHERE "name"= %s """# check record
     record_to_insert = (curr,)
-    cursor.execute(postgres_select_query1,record_to_insert)
-    #print("f1 exec")
+    cursor.execute(postgres_select_query,record_to_insert)
     c = cursor.fetchall()
-    #print("f1 fetch",c)
     b = c[0][0]
     if b==0:
-        postgres_insert_query1 = """ INSERT INTO  "Public".currency ("name") VALUES (%s)"""# insert
+        postgres_insert_query1 = """ INSERT INTO  "Public".Currency ("name") VALUES (%s)"""# insert
         cursor.execute(postgres_insert_query1, record_to_insert)
 
-
-def currency1 (cursor,a):
+# The function for receiving currency's name from market.
+def receiving_currency(cursor,a):
     if type(a) is dict:
-        for i in a:
-            #print("currency1",i,a[i])
-            if i == 'base' or i =='quote':
-                f1 (cursor,a[i])
-            if type(a[i]) is dict:
-                currency1 (cursor,a[i])
+        for key in a:
+            if key == 'base' or key =='quote':
+                insert_into_currency(cursor,a[key])
+            if type(a[key]) is dict:
+                receiving_currency(cursor,a[key])
 
-    
-def f3(cursor,m):
-    postgres_select_query = """Select id,name from "Public".currency"""
+# The function for insert currency's id from table Currency into table Symbols.    
+def inset_into_symbols(cursor,market):
+    postgres_select_query = """Select id,name from "Public".Currency"""
     cursor.execute(postgres_select_query)
     a = cursor.fetchall()
-    d = {}
-    for i in a:
-        d[i[1]]=i[0]
-    for i in m:
-        a= i.split('/')
-        b=d[a[0]]
-        q=d[a[1]]
-        postgres_insert_query1 = """ INSERT INTO  "Public".symbols ("base_id","quote_id") VALUES (%s,%s)"""# insert
-        record_to_insert = (b,q)
+    id_from_currency = {} 
+    for iterator in a:
+        id_from_currency[iterator[1]]=iterator[0]
+    for iterator in market:
+        currency= iterator.split('/')
+        base_id=id_from_currency[currency[0]]
+        quote_id=id_from_currency[currency[1]]
+        postgres_insert_query1 = """ INSERT INTO  "Public".Symbols ("base_id","quote_id") VALUES (%s,%s)"""# insert
+        record_to_insert = (base_id,quote_id)
         cursor.execute(postgres_insert_query1, record_to_insert)
 
-
 try:
-    conn = psycopg2.connect(dbname='daria', user='daria', password='dasha50', host='192.168.4.12', port='5432', )
-    cursor = conn.cursor()
-    postgres_delete_query1 = """ DELETE FROM "Public".symbols """
+    connection = psycopg2.connect(dbname='daria', user='daria', password='dasha50', host='192.168.4.12', port='5432', )
+    cursor = connection.cursor()
+    postgres_delete_query1 = """ DELETE FROM "Public".Symbols """
     cursor.execute(postgres_delete_query1)
-    postgres_delete_query2 = """ DELETE FROM "Public".currency """
+    postgres_delete_query2 = """ DELETE FROM "Public".Currency """
     cursor.execute(postgres_delete_query2)
-    conn.commit()
-    #print("deleted")
-
-    g = ccxt.poloniex().load_markets()
-    #pp = pprint.PrettyPrinter(indent=4)
-    #pp.pprint(g)
-    #print("ccxt got")
-    currency1(cursor,g)
-    f3(cursor,g)
-
-
-    conn.commit()
-
-
+    connection.commit()
     
-    
+    poloniex_market = ccxt.poloniex().load_markets()
+   
+    receiving_currency(cursor,poloniex_market)
+    inset_into_symbols(cursor,poloniex_market)
+    connection.commit()
+
 except (Exception, psycopg2.Error) as error :
-    if(conn):
+    if(connection):
         print("Failed", error)
 finally:
     #closing database connection.
-    if(conn):
+    if(connection):
         if (cursor):
             cursor.close()
-        conn.close()
+        connection.close()
     print("PostgreSQL connection is closed")
 
