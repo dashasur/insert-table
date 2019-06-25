@@ -45,6 +45,18 @@ def inset_into_symbols(cursor,market):
                 postgres_insert_query1 = """ INSERT INTO  "Public".Symbols ("base_id","quote_id") VALUES (%s,%s)"""# insert
                 cursor.execute(postgres_insert_query1, record_to_insert)
 
+# The function for 
+#def f(cursor,market):
+#    for iterator in 
+# for i in ccxt.exchanges:
+#     exchange_class = getattr(ccxt, i)
+#     exchange = exchange_class()
+#     m=exchange.load_markets()
+
+# pprint.pprint(m)
+
+# exit()
+
 try:
     connection = psycopg2.connect(dbname='daria', user='daria', password='dasha50', host='192.168.4.12', port='5432', )
     cursor = connection.cursor()
@@ -53,30 +65,46 @@ try:
     postgres_delete_query2 = """ DELETE FROM "Public".Currency """
     cursor.execute(postgres_delete_query2)
     connection.commit()
-    
-    binance_market = ccxt.binance().load_markets()
-    bitfinex_market = ccxt.bitfinex().load_markets()
-    bittrex_market = ccxt.bittrex().load_markets()
-    #kraken_market = ccxt.kraken().load_markets()
-    kucoin_market = ccxt.kucoin().load_markets()
-    poloniex_market = ccxt.poloniex().load_markets()
-    upbit_market = ccxt.upbit().load_markets()
+
+    for i in ccxt.exchanges:
+        try:
+            print (i)
+            exchange_class = getattr(ccxt, i)
+            print (exchange_class)
+            exchange = exchange_class()
+            print (exchange)
+            m=exchange.load_markets()
+            print (m)
+            receiving_currency(cursor,m)
+            inset_into_symbols(cursor,m)
+        except:
+            print ("ERROR ",i)
+
+
+
+    # binance_market = ccxt.binance().load_markets()
+    # bitfinex_market = ccxt.bitfinex().load_markets()
+    # bittrex_market = ccxt.bittrex().load_markets()
+    # kraken_market = ccxt.kraken().load_markets()
+    # kucoin_market = ccxt.kucoin().load_markets()
+    # poloniex_market = ccxt.poloniex().load_markets()
+    # upbit_market = ccxt.upbit().load_markets()
    
-    receiving_currency(cursor,binance_market)
-    receiving_currency(cursor,bitfinex_market)
-    receiving_currency(cursor,bittrex_market)
-    #receiving_currency(cursor,kraken_market)
-    receiving_currency(cursor,kucoin_market)
-    receiving_currency(cursor,poloniex_market)
-    receiving_currency(cursor,upbit_market)
+    # receiving_currency(cursor,binance_market)
+    # receiving_currency(cursor,bitfinex_market)
+    # receiving_currency(cursor,bittrex_market)
+    # receiving_currency(cursor,kraken_market)
+    # receiving_currency(cursor,kucoin_market)
+    # receiving_currency(cursor,poloniex_market)
+    # receiving_currency(cursor,upbit_market)
     
-    inset_into_symbols(cursor,binance_market)
-    inset_into_symbols(cursor,bitfinex_market)
-    inset_into_symbols(cursor,bittrex_market)
-    #inset_into_symbols(cursor,kraken_market)
-    inset_into_symbols(cursor,kucoin_market)
-    inset_into_symbols(cursor,poloniex_market)
-    inset_into_symbols(cursor,upbit_market)
+    # inset_into_symbols(cursor,binance_market)
+    # inset_into_symbols(cursor,bitfinex_market)
+    # inset_into_symbols(cursor,bittrex_market)
+    # inset_into_symbols(cursor,kraken_market)
+    # inset_into_symbols(cursor,kucoin_market)
+    # inset_into_symbols(cursor,poloniex_market)
+    # inset_into_symbols(cursor,upbit_market)
 
     connection.commit()
 
