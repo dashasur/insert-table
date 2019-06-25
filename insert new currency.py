@@ -33,16 +33,17 @@ def inset_into_symbols(cursor,market):
         id_from_currency[iterator[1]]=iterator[0]
     for iterator in market:
         currency= iterator.split('/')
-        base_id=id_from_currency[currency[0]]
-        quote_id=id_from_currency[currency[1]]
-        postgres_select_query = """ SELECT count(*) cnt FROM "Public".Symbols WHERE "base_id"= %s and "quote_id"= %s"""# check record
-        record_to_insert = (base_id,quote_id)
-        cursor.execute(postgres_select_query,record_to_insert)
-        c = cursor.fetchall()
-        b = c[0][0]
-        if b==0:
-            postgres_insert_query1 = """ INSERT INTO  "Public".Symbols ("base_id","quote_id") VALUES (%s,%s)"""# insert
-            cursor.execute(postgres_insert_query1, record_to_insert)
+        if len(currency)==2:
+            base_id=id_from_currency[currency[0]]
+            quote_id=id_from_currency[currency[1]]
+            postgres_select_query = """ SELECT count(*) cnt FROM "Public".Symbols WHERE "base_id"= %s and "quote_id"= %s"""# check record
+            record_to_insert = (base_id,quote_id)
+            cursor.execute(postgres_select_query,record_to_insert)
+            c = cursor.fetchall()
+            b = c[0][0]
+            if b==0:
+                postgres_insert_query1 = """ INSERT INTO  "Public".Symbols ("base_id","quote_id") VALUES (%s,%s)"""# insert
+                cursor.execute(postgres_insert_query1, record_to_insert)
 
 try:
     connection = psycopg2.connect(dbname='daria', user='daria', password='dasha50', host='192.168.4.12', port='5432', )
